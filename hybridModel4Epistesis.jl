@@ -67,7 +67,6 @@ function bayesPR_selReg(genoTrain, phenoTrain, snpInfo, chrs,locusID, fixedRegSi
             logD0 = -(0.5)*(log(det(varD0)) + rhsReg'*inv(varD0)*rhsReg) + logPiD
             logD1 = -(0.5)*(log(det(varD1)) + rhsReg'*inv(varD1)*rhsReg) + logPiDComp
             probD1 = 1.0/(1.0 + exp(logD0-logD1))
-            println(probD1)
             ycorr .-= view(X,:,theseLoci)*tempBetaVec[theseLoci]
             if probD1 > rand()
                 regCounter += 1
