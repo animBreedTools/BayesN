@@ -86,7 +86,7 @@ function bayesPR_selReg(genoTrain, phenoTrain, snpInfo, chrs,locusID, fixedRegSi
             end
             varBeta[r] = sampleVarBeta(νS_β,tempBetaVec[theseLoci],df_β,regionSize)
         end
-        println("fitted regions: $regCounter, prop fitted regions: regCounter/nMarkers")
+        println("fitted regions: $regCounter, prop fitted regions: $(regCounter/nMarkers)")
         outputControlSt(onScreen,iter,these2Keep,X,tempBetaVec,μ,varBeta,varE,fixedRegSize)
     end
 #    betaFromFile =  readcsv(pwd()"/betaOut",header=false)
