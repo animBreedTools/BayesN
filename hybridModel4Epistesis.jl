@@ -69,7 +69,7 @@ function bayesPR_selReg(genoTrain, phenoTrain, snpInfo, chrs,locusID, fixedRegSi
             probD1 = 1.0/(1.0 + exp(logD0-logD1))
             println(probD1)
             ycorr .-= view(X,:,theseLoci)*tempBetaVec[theseLoci]
-            if probD1 > rand()
+            if probD1 > rand(Uniform(0,1))
                 println("region $r fitted")
                 regCounter += 1
                 for l in theseLoci::UnitRange{Int64}
