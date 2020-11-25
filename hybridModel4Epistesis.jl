@@ -8,13 +8,13 @@ using CSV
 using Printf
 
 function bayesPR_selReg(genoTrain, phenoTrain, snpInfo, chrs,locusID, fixedRegSize, priorPi, estPi, varGenotypic, varResidual, chainLength, burnIn, outputFreq, onScreen)
-    SNPgroups, genoX = prepRegionData(snpInfo, chrs, genoTrain, fixedRegSize)
-    these2Keep = collect((burnIn+outputFreq):outputFreq:chainLength) #print these iterations
+    SNPgroups   = prepRegionData(snpInfo, chrs, locusID, fixedRegSize)
+    these2Keep  = collect((burnIn+outputFreq):outputFreq:chainLength) #print these iterations
     nRegions    = length(SNPgroups)
     println("number of regions: ", nRegions)
     dfEffectVar = 4.0
     dfRes       = 4.0
-    X           = convert(Array{Float64}, genoX[2:end])
+    X           = convert(Array{Float64}, genoTrain)
     println("X is this size", size(X))
     y           = convert(Array{Float64}, phenoTrain)
     println("y is this size", size(y))
