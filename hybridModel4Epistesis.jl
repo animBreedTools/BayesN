@@ -63,8 +63,8 @@ function bayesPR_selReg(genoTrain, phenoTrain, snpInfo, chrs,locusID, fixedRegSi
             regionXpX = Matrix(Diagonal(xpx[theseLoci])) #can be done initially
             varD0 = regionXpX.*varE
             varD1 = (regionXpX.^2).*varBeta[r] + varD0
-            logD0 = -(0.5)*(regionSize*log(det(varD0)))+sum(inv(varRhsD0)*dot(rhsReg,rhsReg)) + logPiD
-            logD1 = -(0.5)*(regionSize*log(det(varRhsD1)))+sum(inv(varD1)*dot(rhsReg,rhsReg))  + logPiDComp
+            logD0 = -(0.5)*(regionSize*log(det(varD0)))+sum(inv(varD0)*dot(rhsReg,rhsReg)) + logPiD
+            logD1 = -(0.5)*(regionSize*log(det(varD1)))+sum(inv(varD1)*dot(rhsReg,rhsReg))  + logPiDComp
             probD1 = 1.0/(1.0 + exp(logD0-logD1))
             println(probD1)
             if probD1 < rand()
