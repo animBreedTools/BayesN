@@ -62,6 +62,8 @@ function bayesPR_selReg(genoTrain, phenoTrain, snpInfo, chrs,locusID, fixedRegSi
             rhsReg = view(X,:,theseLoci)'*ycorr
             regionXpX = Matrix(Diagonal(xpx[theseLoci])) #can be done initially
             varD0 = regionXpX.*varE
+            println("D0: $(varD0)")
+            println("invD0: $(inv(varD0))")
             varD1 = (regionXpX.^2).*varBeta[r] + varD0
             logD0 = -(0.5)*(regionSize*log(det(varD0)))+rhsReg'*inv(varD0)*rhsReg + logPiD
             logD1 = -(0.5)*(regionSize*log(det(varD1)))+rhsReg'*inv(varD1)*rhsReg + logPiDComp
