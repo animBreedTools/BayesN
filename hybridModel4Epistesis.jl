@@ -1,3 +1,5 @@
+###compatible with 1.4.1
+
 using DataFrames
 using Distributions
 using DelimitedFiles
@@ -5,7 +7,7 @@ using LinearAlgebra
 using CSV
 using Printf
 
-function bayesPR(genoTrain, phenoTrain, snpInfo, chrs, fixedRegSize, varGenotypic, varResidual, chainLength, burnIn, outputFreq, onScreen)
+function bayesPR_selReg(genoTrain, phenoTrain, snpInfo, chrs, fixedRegSize, priorPi, estPi, varGenotypic, varResidual, chainLength, burnIn, outputFreq, onScreen)
     SNPgroups, genoX = prepRegionData(snpInfo, chrs, genoTrain, fixedRegSize)
     these2Keep = collect((burnIn+outputFreq):outputFreq:chainLength) #print these iterations
     nRegions    = length(SNPgroups)
@@ -33,6 +35,8 @@ function bayesPR(genoTrain, phenoTrain, snpInfo, chrs, fixedRegSize, varGenotypi
     scaleRes        = varResidual*(dfRes-2.0)/dfRes
     νS_e            = scaleRes*dfRes
     df_e            = dfRes
+    logPiD          = log(priorPi)
+    logPiDComp      = log(1-priorPi)
     tempBetaVec     = zeros(Float64,nMarkers) #initial values as "0"
     μ               = mean(y)
     X              .-= ones(Float64,nRecords)*2p
@@ -53,14 +57,29 @@ function bayesPR(genoTrain, phenoTrain, snpInfo, chrs, fixedRegSize, varGenotypi
             theseLoci = SNPgroups[r]
             regionSize = length(theseLoci)
             λ_r = varE/varBeta[r]
-            for l in theseLoci::UnitRange{Int64}
-                BLAS.axpy!(tempBetaVec[l], view(X,:,l), ycorr)
-                rhs = view(X,:,l)'*ycorr
-                lhs = xpx[l] + λ_r
-                meanBeta = lhs\rhs
-                tempBetaVec[l] = sampleBeta(meanBeta, lhs, varE)
-                BLAS.axpy!(-1*tempBetaVec[l], view(X,:,l), ycorr)
+            ##select region
+            ycorr .+= view(X,:,theseLoci)*tempBetaVec[theseLoci] 
+            rhsReg = view(X,:,theseLoci)'*ycorr
+            regionXpX = Matrix(Diagonal(xpx[theseLoci])) #can be done initially
+            varD0 = regionXpX.*varE
+            varD1 = (regionXpX.^2).*varBeta[r] + varD0
+            logD0 = -(0.5)*(regionSize*log(det(varD0)))+sum(inv(varRhsD0)*dot(rhsReg,rhsReg)) + logPiD
+            logD1 = -(0.5)*(regionSize*log(det(varRhsD1)))+sum(inv(varD1)*dot(rhsReg,rhsReg))  + logPiDComp
+            probD1 = 1.0/(1.0 + exp(logD0-logD1))
+            println(probD1)
+            if probD1 < rand()
+                for l in theseLoci::UnitRange{Int64}
+                   BLAS.axpy!(tempBetaVec[l], view(X,:,l), ycorr)
+                   rhs = view(X,:,l)'*ycorr
+                   lhs = xpx[l] + λ_r
+                   meanBeta = lhs\rhs
+                   tempBetaVec[l] = sampleBeta(meanBeta, lhs, varE)
+                   BLAS.axpy!(-1*tempBetaVec[l], view(X,:,l), ycorr)
+                end
+            else
+                tempBetaVec[theseLoci] .= 0
             end
+            ycorr .+= view(X,:,theseLoci)*tempBetaVec[theseLoci] 
             varBeta[r] = sampleVarBeta(νS_β,tempBetaVec[theseLoci],df_β,regionSize)
         end
         outputControlSt(onScreen,iter,these2Keep,X,tempBetaVec,μ,varBeta,varE,fixedRegSize)
