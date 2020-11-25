@@ -68,6 +68,7 @@ function bayesPR_selReg(genoTrain, phenoTrain, snpInfo, chrs,locusID, fixedRegSi
             probD1 = 1.0/(1.0 + exp(logD0-logD1))
             println(probD1)
             if probD1 < rand()
+                println("region $r fitted")
                 for l in theseLoci::UnitRange{Int64}
                    BLAS.axpy!(tempBetaVec[l], view(X,:,l), ycorr)
                    rhs = view(X,:,l)'*ycorr
@@ -77,6 +78,7 @@ function bayesPR_selReg(genoTrain, phenoTrain, snpInfo, chrs,locusID, fixedRegSi
                    BLAS.axpy!(-1*tempBetaVec[l], view(X,:,l), ycorr)
                 end
             else
+                println("region $r NOT fitted")
                 tempBetaVec[theseLoci] .= 0
             end
             ycorr .-= view(X,:,theseLoci)*tempBetaVec[theseLoci] 
