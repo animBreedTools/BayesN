@@ -53,6 +53,7 @@ function bayesPR_selReg(genoTrain, phenoTrain, snpInfo, chrs,locusID, fixedRegSi
         meanMu   = rhs*invLhs
         μ        = rand(Normal(meanMu,sqrt(invLhs*varE)))
         ycorr    .-= μ
+        regCounter = 0
         for r in 1:nRegions
             theseLoci = SNPgroups[r]
             regionSize = length(theseLoci)
@@ -70,6 +71,7 @@ function bayesPR_selReg(genoTrain, phenoTrain, snpInfo, chrs,locusID, fixedRegSi
             ycorr .-= view(X,:,theseLoci)*tempBetaVec[theseLoci]
             if probD1 > rand()
                 println("region $r fitted")
+                regCounter += 1
                 for l in theseLoci::UnitRange{Int64}
                    BLAS.axpy!(tempBetaVec[l], view(X,:,l), ycorr)
                    rhs = view(X,:,l)'*ycorr
@@ -84,6 +86,7 @@ function bayesPR_selReg(genoTrain, phenoTrain, snpInfo, chrs,locusID, fixedRegSi
             end
             varBeta[r] = sampleVarBeta(νS_β,tempBetaVec[theseLoci],df_β,regionSize)
         end
+        println("fitted regions: $regCounter, prop fitted regions: regCounter/nMarkers")
         outputControlSt(onScreen,iter,these2Keep,X,tempBetaVec,μ,varBeta,varE,fixedRegSize)
     end
 #    betaFromFile =  readcsv(pwd()"/betaOut",header=false)
